@@ -45,7 +45,7 @@ import java.io.FileOutputStream;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class PreviewActivity extends AppCompatActivity {
+public class OldPreviewActivity extends AppCompatActivity {
     @BindView(R.id.preview__activity__webview)
     public WebView _webview;
 
@@ -70,7 +70,7 @@ public class PreviewActivity extends AppCompatActivity {
         if (AppSettings.get().isEditorStatusBarHidden()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-        setContentView(R.layout.preview__activity);
+        setContentView(R.layout.old_preview__activity);
         ButterKnife.bind(this);
 
         setSupportActionBar(_toolbar);
@@ -144,7 +144,7 @@ public class PreviewActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.preview__menu, menu);
+        getMenuInflater().inflate(R.menu.old_preview__menu, menu);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             menu.findItem(R.id.action_share_pdf).setVisible(true);
@@ -195,7 +195,7 @@ public class PreviewActivity extends AppCompatActivity {
     }
 
     private void shareStream(File file, String type) {
-        Uri fileUri = FileProvider.getUriForFile(PreviewActivity.this,
+        Uri fileUri = FileProvider.getUriForFile(OldPreviewActivity.this,
                 Constants.FILE_PROVIDER_AUTHORITIES,
                 file);
 
@@ -286,7 +286,7 @@ public class PreviewActivity extends AppCompatActivity {
     private void editNote() {
         _isEditIncoming = true;
 
-        Intent intent = new Intent(this, NoteActivity.class);
+        Intent intent = new Intent(this, OldNoteActivity.class);
         intent.putExtra(Constants.NOTE_KEY, _note);
 
         startActivity(intent);

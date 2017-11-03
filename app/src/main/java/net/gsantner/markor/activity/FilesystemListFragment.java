@@ -404,7 +404,7 @@ public class FilesystemListFragment extends Fragment {
             Intent intent;
 
             if (AppSettings.get().isPreviewFirst()) {
-                intent = new Intent(context, PreviewActivity.class);
+                intent = new Intent(context, OldPreviewActivity.class);
 
                 if (note != null) {
                     Uri uriBase = null;
@@ -419,7 +419,7 @@ public class FilesystemListFragment extends Fragment {
                 String content = MarkorSingleton.getInstance().readFileUri(noteUri, context);
                 intent.putExtra(Constants.MD_PREVIEW_KEY, content);
             } else {
-                intent = new Intent(context, NoteActivity.class);
+                intent = new Intent(context, OldNoteActivity.class);
             }
             intent.putExtra(Constants.NOTE_KEY, note);
 

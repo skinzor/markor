@@ -248,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 case R.id.main__activity__create_note_fab: {
-                    Intent intent = new Intent(MainActivity.this, NoteActivity.class);
+                    Intent intent = new Intent(MainActivity.this, OldNoteActivity.class);
                     intent.putExtra(Constants.TARGET_DIR, _filesystemListFragment.getCurrentDir().getAbsolutePath());
                     startActivity(intent);
                     break;

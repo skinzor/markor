@@ -18,7 +18,7 @@ import android.widget.RemoteViews;
 
 import net.gsantner.markor.R;
 import net.gsantner.markor.activity.MainActivity;
-import net.gsantner.markor.activity.NoteActivity;
+import net.gsantner.markor.activity.OldNoteActivity;
 import net.gsantner.markor.model.Constants;
 import net.gsantner.markor.util.AppSettings;
 
@@ -57,7 +57,7 @@ public class MarkorWidgetProvider extends AppWidgetProvider {
             SharedPreferences sharedPreferences = context.getSharedPreferences(
                     "" + appWidgetIds[i], Context.MODE_PRIVATE);
             String directory = sharedPreferences.getString(Constants.WIDGET_PATH, AppSettings.get().getSaveDirectory());
-            Intent newNoteIntent = new Intent(context, NoteActivity.class)
+            Intent newNoteIntent = new Intent(context, OldNoteActivity.class)
                     .putExtra(Constants.TARGET_DIR, directory);
 
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, newNoteIntent, 0);
@@ -76,7 +76,7 @@ public class MarkorWidgetProvider extends AppWidgetProvider {
             views.setEmptyView(R.id.widget_list_container, R.id.widget_empty_hint);
             views.setRemoteAdapter(R.id.widget_notes_list, notesListIntent);
 
-            Intent openNoteIntent = new Intent(context, NoteActivity.class).setAction(Intent.ACTION_EDIT);
+            Intent openNoteIntent = new Intent(context, OldNoteActivity.class).setAction(Intent.ACTION_EDIT);
             PendingIntent openNotePendingIntent = PendingIntent.getActivity(context, 0,
                     openNoteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             views.setPendingIntentTemplate(R.id.widget_notes_list, openNotePendingIntent);

@@ -51,7 +51,7 @@ import java.util.UUID;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class NoteActivity extends AppCompatActivity {
+public class OldNoteActivity extends AppCompatActivity {
 
     @BindView(R.id.note__activity__edit_note_title)
     EditText _editNoteTitle;
@@ -87,7 +87,7 @@ public class NoteActivity extends AppCompatActivity {
         if (_appSettings.isEditorStatusBarHidden()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-        setContentView(R.layout.note__activity);
+        setContentView(R.layout.old_note__activity);
         ButterKnife.bind(this);
         if (_appSettings.isEditorStatusBarHidden()) {
             AndroidBug5497Workaround.assistActivity(this);
@@ -184,7 +184,7 @@ public class NoteActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.note__menu, menu);
+        getMenuInflater().inflate(R.menu.old_note__menu, menu);
         return true;
     }
 
@@ -284,7 +284,7 @@ public class NoteActivity extends AppCompatActivity {
 
     private void previewNote() {
         saveNote();
-        Intent intent = new Intent(this, PreviewActivity.class);
+        Intent intent = new Intent(this, OldPreviewActivity.class);
 
         if (_note != null) {
             Uri uriBase = MarkorSingleton.getInstance().getUriFromFile(_note.getParentFile());
