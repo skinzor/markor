@@ -92,5 +92,6 @@
     <string name="contribute">Contribute</string>
     <string name="donate">Donate</string>
     <string name="project_page">Project page</string>
+    <string name="title_activity_document">DocumentActivity</string>
 
 </resources>

@@ -184,7 +184,7 @@ public class OldNoteActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.old_note__menu, menu);
+        getMenuInflater().inflate(R.menu.document__menu, menu);
         return true;
     }
 

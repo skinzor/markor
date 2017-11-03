@@ -244,7 +244,12 @@ public class MainActivity extends AppCompatActivity {
         if (PermissionChecker.doIfPermissionGranted(this) && PermissionChecker.mkSaveDir(this)) {
             switch (view.getId()) {
                 case R.id.main__activity__create_folder_fab: {
-                    showCreateFolderDialog();
+                    //showCreateFolderDialog(); //TODO: Uncomment and use new stuff when ready
+
+                    // NEW
+                    Intent intent = new Intent(this, DocumentActivity.class);
+                    intent.putExtra(Constants.TARGET_DIR, _filesystemListFragment.getCurrentDir());
+                    startActivity(intent);
                     break;
                 }
                 case R.id.main__activity__create_note_fab: {
