@@ -36,7 +36,7 @@ public class Constants {
             Constants.MD_EXT4, Constants.MD_EXT5, Constants.MD_EXT6};
 
 
-    public static final int MAX_TITLE_LENGTH = 20;
+    public static final int MAX_TITLE_EXTRACTION_LENGTH = 25;
     public static final String EXTRA_FOLDERPATH = "filesystem_folderpath";
     public static final String EXTRA_FILEPATH = "filesystem_filepath";
 

@@ -93,7 +93,6 @@ public class DocumentActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         _toolbarTitleEdit.clearFocus();
         return super.onOptionsItemSelected(item);
     }

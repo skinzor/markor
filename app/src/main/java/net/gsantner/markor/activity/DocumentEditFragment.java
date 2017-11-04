@@ -24,12 +24,15 @@ import net.gsantner.markor.util.AppSettings;
 import net.gsantner.opoc.util.FileUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Locale;
 import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnFocusChange;
+import butterknife.OnTextChanged;
 
 @SuppressWarnings("UnusedReturnValue")
 public class DocumentEditFragment extends BaseFragment {
@@ -79,10 +82,15 @@ public class DocumentEditFragment extends BaseFragment {
         _contentEditor.setText(_document.getContent());
 
         Activity activity = getActivity();
-        if (activity != null && activity instanceof DocumentActivity){
-            DocumentActivity da = ((DocumentActivity)activity);
+        if (activity != null && activity instanceof DocumentActivity) {
+            DocumentActivity da = ((DocumentActivity) activity);
             da.setDocumentTitle(_document.getTitle());
         }
+    }
+
+    @OnTextChanged(value = R.id.note__activity__note_content_editor, callback = OnTextChanged.Callback.TEXT_CHANGED)
+    public void onContentEditValueChanged(CharSequence text) {
+        _document.setContent(text.toString());
     }
 
     @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
@@ -103,7 +111,7 @@ public class DocumentEditFragment extends BaseFragment {
         if (extraPathIsFolder) {
             extraPath.mkdirs();
             while (filePath.exists()) {
-                filePath = new File(extraPath, getString(R.string.document_one) + " " + UUID.randomUUID().toString().substring(0, 6));
+                filePath = new File(extraPath, getString(R.string.document_one) + " " + UUID.randomUUID().toString());
             }
         } else if (filePath.isFile() && filePath.canRead()) {
             // Extract existing extension
@@ -119,7 +127,7 @@ public class DocumentEditFragment extends BaseFragment {
             document.setContent(FileUtils.readTextFile(filePath));
         }
 
-        document.setFilePath(filePath);
+        document.setFile(filePath);
         document.setDoHistory(true);
         return document;
     }
@@ -183,6 +191,52 @@ public class DocumentEditFragment extends BaseFragment {
         return false;
     }
 
+    /**
+     * Save the file to its directory
+     */
+    private void saveNote() {
+        String filename = normalizeTitleForFilename() + _document.getFileExtension();
+        _document.setDoHistory(true);
+        _document.setFile(new File(_document.getFile().getParentFile(), filename));
+
+        Document documentInitial = _document.getInitialVersion();
+        if (!_document.getFile().equals(documentInitial.getFile())) {
+            if (documentInitial.getFile().exists()) {
+                FileUtils.renameFile(documentInitial.getFile(), _document.getFile());
+            }
+        }
+
+        if (!_document.getContent().equals(documentInitial.getContent())) {
+            FileUtils.writeFile(_document.getFile(), _document.getContent());
+        }
+        _document.getHistory().clear();
+
+        //TODO: updateWidgets();
+
+    }
+
+
+    public String normalizeTitleForFilename() {
+        String name = _document.getTitle();
+        if (name.length() == 0) {
+            if (_document.getContent().length() == 0) {
+                return null;
+            } else {
+                String contentL1 = _document.getContent().split("\n")[0];
+                if (contentL1.length() < Constants.MAX_TITLE_EXTRACTION_LENGTH) {
+                    name = contentL1.substring(0, contentL1.length());
+                } else {
+                    name = contentL1.substring(0, Constants.MAX_TITLE_EXTRACTION_LENGTH);
+                }
+            }
+        }
+        name = name.replaceAll("[\\\\/:\"*?<>|]+", "").trim();
+
+        if (name.isEmpty()) {
+            name = getString(R.string.document_one) + " " + UUID.randomUUID().toString();
+        }
+        return name;
+    }
 
     //
     //
@@ -243,6 +297,7 @@ public class DocumentEditFragment extends BaseFragment {
 
         @Override
         public void onClick(View v) {
+            saveNote();
 
             if (_contentEditor.hasSelection()) {
                 String text = _contentEditor.getText().toString();
@@ -302,7 +357,7 @@ public class DocumentEditFragment extends BaseFragment {
 
     private void getAlertDialog(int action) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        final View view = getLayoutInflater().inflate(R.layout.format_dialog, (ViewGroup)null);
+        final View view = getLayoutInflater().inflate(R.layout.format_dialog, (ViewGroup) null);
 
         final EditText link_name = view.findViewById(R.id.format_dialog_name);
         final EditText link_url = view.findViewById(R.id.format_dialog_url);

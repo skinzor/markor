@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DocumentTest {
 
     @Test
-    public void documentOlderVerion() {
+    public void documentOlderVersion() {
         Document document = new Document();
         document.setTitle("Hello");
         document.forceAddNextChangeToHistory();

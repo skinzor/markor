@@ -20,7 +20,7 @@ public class Document implements Serializable {
     private final static int MIN_HISTORY_DELAY = 2000; // [ms]
 
     private ArrayList<Document> _history = new ArrayList<>();
-    private File _filePath = null; // Full filepath (path + filename + extension)
+    private File _file = null; // Full filepath (path + filename + extension)
     private String _title = "";  // The title of the document. May lead to a rename at save
     private String _fileExtension = ""; // Not versioned. folder(path) /  title + ext
     private String _content = "";
@@ -31,8 +31,8 @@ public class Document implements Serializable {
     public Document() {
     }
 
-    public Document(File filePath) {
-        _filePath = filePath;
+    public Document(File file) {
+        _file = file;
     }
 
     public synchronized Document cloneDocument() {
@@ -45,7 +45,7 @@ public class Document implements Serializable {
 
     public synchronized static Document fromDocumentToDocument(Document source, Document target) {
         target.setDoHistory(false);
-        target.setFilePath(source.getFilePath());
+        target.setFile(source.getFile());
         target.setTitle(source.getTitle());
         target.setContent(source.getContent());
         target.setDoHistory(true);
@@ -85,7 +85,7 @@ public class Document implements Serializable {
     }
 
     public boolean hasChangesNotInHistory() {
-        return _historyPosition == _history.size() && !_history.get(_history.size() - 1).equals(this);
+        return _historyPosition == _history.size() && (_history.size() == 0 || !_history.get(_history.size() - 1).equals(this));
     }
 
     public synchronized void goToNewerVersion() {
@@ -105,14 +105,14 @@ public class Document implements Serializable {
         }
     }
 
-    public synchronized File getFilePath() {
-        return _filePath;
+    public synchronized File getFile() {
+        return _file;
     }
 
-    public synchronized void setFilePath(File filePath) {
-        if (!equalsc(getFilePath(), filePath)) {
+    public synchronized void setFile(File file) {
+        if (!equalsc(getFile(), file)) {
             addToHistory();
-            _filePath = filePath;
+            _file = file;
         }
     }
 
@@ -138,6 +138,25 @@ public class Document implements Serializable {
             _content = content;
             _lastChanged = System.currentTimeMillis();
         }
+    }
+
+    public synchronized Document getInitialVersion() {
+        return hasChangesNotInHistory() && _history.size() == 0 ? this : _history.get(0);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Document) {
+            Document other = ((Document) obj);
+            return equalsc(getFile(), other.getFile())
+                    && equalsc(getTitle(), other.getTitle())
+                    && equalsc(getContent(), other.getContent());
+        }
+        return super.equals(obj);
+    }
+
+    private static boolean equalsc(Object o1, Object o2) {
+        return (o1 == null && o2 == null) || o1 != null && o1.equals(o2);
     }
 
     public boolean isDoHistory() {
@@ -174,20 +193,5 @@ public class Document implements Serializable {
 
     public void setFileExtension(String fileExtension) {
         _fileExtension = fileExtension;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Document) {
-            Document other = ((Document) obj);
-            return equalsc(getFilePath(), other.getFilePath())
-                    && equalsc(getTitle(), other.getTitle())
-                    && equalsc(getContent(), other.getContent());
-        }
-        return super.equals(obj);
-    }
-
-    private static boolean equalsc(Object o1, Object o2) {
-        return (o1 == null && o2 == null) || o1 != null && o1.equals(o2);
     }
 }

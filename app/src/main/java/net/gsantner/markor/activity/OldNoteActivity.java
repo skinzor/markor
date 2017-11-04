@@ -300,16 +300,24 @@ public class OldNoteActivity extends AppCompatActivity {
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_notes_list);
     }
 
-    private String normalizeFilename(String content, String title) {
+
+
+
+
+
+
+
+
+    public String normalizeFilename(String content, String title) {
         String filename = title;
         if (filename.length() == 0) {
             if (content.length() == 0) {
                 return null;
             } else {
-                if (content.length() < Constants.MAX_TITLE_LENGTH) {
+                if (content.length() < Constants.MAX_TITLE_EXTRACTION_LENGTH) {
                     filename = content.substring(0, content.length());
                 } else {
-                    filename = content.substring(0, Constants.MAX_TITLE_LENGTH);
+                    filename = content.substring(0, Constants.MAX_TITLE_EXTRACTION_LENGTH);
                 }
             }
         }
@@ -320,36 +328,6 @@ public class OldNoteActivity extends AppCompatActivity {
         }
         return filename;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private String readNote() {
