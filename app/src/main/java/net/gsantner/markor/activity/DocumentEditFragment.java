@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import net.gsantner.markor.R;
+import net.gsantner.markor.model.Document;
 import net.gsantner.markor.ui.BaseFragment;
 
 import java.io.File;
@@ -16,7 +17,6 @@ import butterknife.ButterKnife;
 
 public class DocumentEditFragment extends BaseFragment {
     public static final String FRAGMENT_TAG = "DocumentEditFragment";
-
     private static final String EXTRA_PATH = "EXTRA_PATH";
     private static final String EXTRA_PATH_IS_FOLDER = "EXTRA_PATH_IS_FOLDER";
 
@@ -28,6 +28,8 @@ public class DocumentEditFragment extends BaseFragment {
         f.setArguments(args);
         return f;
     }
+
+    private Document _document;
 
     public DocumentEditFragment() {
     }
@@ -42,6 +44,15 @@ public class DocumentEditFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         Context c = getContext();
+        Bundle arguments = getArguments();
+        if (arguments == null){
+            return;
+        }
+
+        File extraPath = (File) arguments.getSerializable(EXTRA_PATH);
+        if (_document == null) {
+            _document = new Document();
+        }
     }
 
     @Override

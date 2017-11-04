@@ -15,20 +15,22 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Objects;
 
 @SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused"})
 public class Document implements Serializable {
     private ArrayList<Document> _history = new ArrayList<>();
-    private File _saveFolder;
-    private String _title;
-    private String _extension;
-    private String _content;
+    private File _filePath; // Full filepath (path + filename + extension)
+    private String _title;  // The title of the document. May lead to a rename at save
+    private String _content = "";
     private boolean _doHistory = true;
     private int _historyPosition;
     private Date _lastChanged = new Date();
 
     public Document() {
+    }
+
+    public Document(File filePath) {
+        _filePath = filePath;
     }
 
     public synchronized Document cloneDocument() {
@@ -41,10 +43,9 @@ public class Document implements Serializable {
 
     public synchronized static Document fromDocumentToDocument(Document source, Document target) {
         target.setDoHistory(false);
-        target.setContent(source.getContent());
-        target.setSaveFolder(source.getSaveFolder());
+        target.setFilePath(source.getFilePath());
         target.setTitle(source.getTitle());
-        target.setExtension(source.getExtension());
+        target.setContent(source.getContent());
         target.setDoHistory(true);
         return target;
     }
@@ -68,7 +69,7 @@ public class Document implements Serializable {
     public synchronized void goToEarlierVersion() {
         if (canGoToEarlierVersion()) {
             // If we are at the current state, but this was not saved yet -> save current state
-            if (_historyPosition == _history.size() && !_history.get(_history.size() - 1).equals(this)) {
+            if (hasUnversionedChanges()) {
                 addToHistory(true);
                 _historyPosition--;
             }
@@ -76,6 +77,10 @@ public class Document implements Serializable {
             _historyPosition--;
             loadFromDocument(_history.get(_historyPosition));
         }
+    }
+
+    public boolean hasUnversionedChanges() {
+        return _historyPosition == _history.size() && !_history.get(_history.size() - 1).equals(this);
     }
 
     public synchronized void goToNewerVersion() {
@@ -95,13 +100,13 @@ public class Document implements Serializable {
         }
     }
 
-    public synchronized File getSaveFolder() {
-        return _saveFolder;
+    public synchronized File getFilePath() {
+        return _filePath;
     }
 
-    public synchronized void setSaveFolder(File saveFolder) {
+    public synchronized void setFilePath(File filePath) {
         addToHistory(false);
-        _saveFolder = saveFolder;
+        _filePath = filePath;
     }
 
     public synchronized String getTitle() {
@@ -120,15 +125,6 @@ public class Document implements Serializable {
     public synchronized void setContent(String content) {
         addToHistory(false);
         _content = content;
-    }
-
-    public synchronized String getExtension() {
-        return _extension;
-    }
-
-    public synchronized void setExtension(String extension) {
-        addToHistory(false);
-        _extension = extension;
     }
 
     public boolean isDoHistory() {
@@ -167,12 +163,10 @@ public class Document implements Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof Document) {
             Document other = ((Document) obj);
-            return nuquals(getTitle(), other.getTitle())
-                    && nuquals(getContent(), other.getContent())
-                    && nuquals(getExtension(), other.getExtension())
-                    && nuquals(getSaveFolder(), other.getSaveFolder());
+            return nuquals(getFilePath(), other.getFilePath())
+                    && nuquals(getTitle(), other.getTitle())
+                    && nuquals(getContent(), other.getContent());
         }
-
         return super.equals(obj);
     }
 
