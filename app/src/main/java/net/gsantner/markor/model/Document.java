@@ -14,17 +14,19 @@ package net.gsantner.markor.model;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 
 @SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused"})
 public class Document implements Serializable {
+    private final static int MIN_HISTORY_DELAY = 2000; // [ms]
+
     private ArrayList<Document> _history = new ArrayList<>();
-    private File _filePath; // Full filepath (path + filename + extension)
-    private String _title;  // The title of the document. May lead to a rename at save
+    private File _filePath = null; // Full filepath (path + filename + extension)
+    private String _title = "";  // The title of the document. May lead to a rename at save
+    private String _fileExtension = ""; // Not versioned. folder(path) /  title + ext
     private String _content = "";
     private boolean _doHistory = true;
-    private int _historyPosition;
-    private Date _lastChanged = new Date();
+    private int _historyPosition = 0;
+    private long _lastChanged = 0;
 
     public Document() {
     }
@@ -69,17 +71,20 @@ public class Document implements Serializable {
     public synchronized void goToEarlierVersion() {
         if (canGoToEarlierVersion()) {
             // If we are at the current state, but this was not saved yet -> save current state
-            if (hasUnversionedChanges()) {
-                addToHistory(true);
+            if (hasChangesNotInHistory()) {
+                forceAddNextChangeToHistory();
+                addToHistory();
                 _historyPosition--;
             }
 
             _historyPosition--;
-            loadFromDocument(_history.get(_historyPosition));
+            if (_historyPosition >= 0 && _historyPosition < _history.size()) {
+                loadFromDocument(_history.get(_historyPosition));
+            }
         }
     }
 
-    public boolean hasUnversionedChanges() {
+    public boolean hasChangesNotInHistory() {
         return _historyPosition == _history.size() && !_history.get(_history.size() - 1).equals(this);
     }
 
@@ -90,8 +95,8 @@ public class Document implements Serializable {
         }
     }
 
-    private synchronized void addToHistory(boolean immediately) {
-        if (_doHistory) {
+    public synchronized void addToHistory() {
+        if (_doHistory && (((_lastChanged + MIN_HISTORY_DELAY) < System.currentTimeMillis()))) {
             while (_historyPosition != _history.size() && _history.size() != 0) {
                 _history.remove(_history.size() - 1);
             }
@@ -105,8 +110,10 @@ public class Document implements Serializable {
     }
 
     public synchronized void setFilePath(File filePath) {
-        addToHistory(false);
-        _filePath = filePath;
+        if (!equalsc(getFilePath(), filePath)) {
+            addToHistory();
+            _filePath = filePath;
+        }
     }
 
     public synchronized String getTitle() {
@@ -114,8 +121,11 @@ public class Document implements Serializable {
     }
 
     public synchronized void setTitle(String title) {
-        addToHistory(false);
-        _title = title;
+        if (!equalsc(getTitle(), title)) {
+            addToHistory();
+            _title = title;
+            _lastChanged = System.currentTimeMillis();
+        }
     }
 
     public synchronized String getContent() {
@@ -123,8 +133,11 @@ public class Document implements Serializable {
     }
 
     public synchronized void setContent(String content) {
-        addToHistory(false);
-        _content = content;
+        if (!equalsc(getContent(), content)) {
+            addToHistory();
+            _content = content;
+            _lastChanged = System.currentTimeMillis();
+        }
     }
 
     public boolean isDoHistory() {
@@ -151,26 +164,30 @@ public class Document implements Serializable {
         _historyPosition = historyPosition;
     }
 
-    public Date getLastChanged() {
-        return _lastChanged;
+    public void forceAddNextChangeToHistory() {
+        _lastChanged = 0;
     }
 
-    public void setLastChanged(Date lastChanged) {
-        _lastChanged = lastChanged;
+    public String getFileExtension() {
+        return _fileExtension;
+    }
+
+    public void setFileExtension(String fileExtension) {
+        _fileExtension = fileExtension;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Document) {
             Document other = ((Document) obj);
-            return nuquals(getFilePath(), other.getFilePath())
-                    && nuquals(getTitle(), other.getTitle())
-                    && nuquals(getContent(), other.getContent());
+            return equalsc(getFilePath(), other.getFilePath())
+                    && equalsc(getTitle(), other.getTitle())
+                    && equalsc(getContent(), other.getContent());
         }
         return super.equals(obj);
     }
 
-    private static boolean nuquals(Object o1, Object o2) {
+    private static boolean equalsc(Object o1, Object o2) {
         return (o1 == null && o2 == null) || o1 != null && o1.equals(o2);
     }
 }

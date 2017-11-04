@@ -8,6 +8,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -21,8 +23,13 @@ import net.gsantner.markor.util.AndroidBug5497Workaround;
 import net.gsantner.markor.util.AppSettings;
 import net.gsantner.markor.util.ContextUtils;
 
+import java.io.File;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.OnFocusChange;
+import butterknife.OnTextChanged;
 
 public class DocumentActivity extends AppCompatActivity {
 
@@ -63,6 +70,14 @@ public class DocumentActivity extends AppCompatActivity {
         }
 
         _fragManager = getSupportFragmentManager();
+
+
+        if (AppSettings.get().isPreviewFirst()){
+
+        }else{
+
+        }
+
         showEditor();
     }
 
@@ -71,20 +86,16 @@ public class DocumentActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.document__menu, menu);
         ContextUtils cu = ContextUtils.get();
 
-
         cu.tintMenuItems(menu, true, Color.WHITE);
         cu.setSubMenuIconsVisiblity(menu, true);
         return true;
     }
 
-    public void showFragment(BaseFragment fragment) {
-        BaseFragment currentTop = (BaseFragment) _fragManager.findFragmentById(R.id.main__activity__fragment_placeholder);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (currentTop == null || !currentTop.getFragmentTag().equals(fragment.getFragmentTag())) {
-            _fragManager.beginTransaction().addToBackStack(null).replace(R.id.document__placeholder_fragment
-                    , fragment, fragment.getFragmentTag()).commit();
-        }
-        supportInvalidateOptionsMenu();
+        _toolbarTitleEdit.clearFocus();
+        return super.onOptionsItemSelected(item);
     }
 
     public void setDocumentTitle(final String title) {
@@ -93,8 +104,60 @@ public class DocumentActivity extends AppCompatActivity {
     }
 
     public void showEditor() {
-        setDocumentTitle("hello world");
-        Toast.makeText(this, getTitle(), Toast.LENGTH_LONG).show();
-        showFragment(new DocumentEditFragment());
+        showFragment(DocumentEditFragment.newInstance(new File("/storage/emulated/0/Documents/markor/Markor Readme.md"), false));
+    }
+
+    @OnFocusChange(R.id.note__activity__edit_note_title)
+    public void onToolbarEditTitleFocusChanged(View view, boolean hasFocus) {
+        if (!hasFocus) {
+            setDocumentTitle(_toolbarTitleEdit.getText().toString());
+            _toolbarSwitcher.showNext();
+        }
+    }
+
+    @OnClick(R.id.note__activity__text_note_title)
+    public void onToolbarTitleTapped(View view) {
+        if (getCurrentVisibleFragment() != getExistingFragment(PreviewEditFragment.FRAGMENT_TAG)) {
+            _toolbarSwitcher.showPrevious();
+            _toolbarTitleEdit.requestFocus();
+        }
+    }
+
+    @OnTextChanged(value = R.id.note__activity__edit_note_title, callback = OnTextChanged.Callback.TEXT_CHANGED)
+    public void onToolbarTitleEditValueChanged(CharSequence title) {
+        // Do not recurse
+        if (title.equals(_toolbarTitleText.getText())) {
+            return;
+        }
+
+        if (getExistingFragment(DocumentEditFragment.FRAGMENT_TAG) != null) {
+            ((DocumentEditFragment) getExistingFragment(DocumentEditFragment.FRAGMENT_TAG))
+                    .getDocument().setTitle(title.toString());
+        }
+    }
+
+
+    public void showFragment(BaseFragment fragment) {
+        BaseFragment currentTop = (BaseFragment) _fragManager.findFragmentById(R.id.document__placeholder_fragment);
+
+        if (currentTop == null || !currentTop.getFragmentTag().equals(fragment.getFragmentTag())) {
+            _fragManager.beginTransaction().addToBackStack(null).replace(R.id.document__placeholder_fragment
+                    , fragment, fragment.getFragmentTag()).commit();
+        }
+        supportInvalidateOptionsMenu();
+    }
+
+
+    public synchronized BaseFragment getExistingFragment(final String fragmentTag) {
+        FragmentManager fmgr = getSupportFragmentManager();
+        BaseFragment fragment = (BaseFragment) fmgr.findFragmentByTag(fragmentTag);
+        if (fragment != null) {
+            return fragment;
+        }
+        return null;
+    }
+
+    private BaseFragment getCurrentVisibleFragment() {
+        return (BaseFragment) getSupportFragmentManager().findFragmentById(R.id.document__placeholder_fragment);
     }
 }

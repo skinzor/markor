@@ -25,7 +25,9 @@ public class DocumentTest {
     public void documentOlderVerion() {
         Document document = new Document();
         document.setTitle("Hello");
+        document.forceAddNextChangeToHistory();
         document.setTitle("Hello World");
+        document.forceAddNextChangeToHistory();
         document.goToEarlierVersion();
         assertThat(document.getTitle()).isEqualTo("Hello");
     }
@@ -34,7 +36,9 @@ public class DocumentTest {
     public void documentNewerVersion() {
         Document document = new Document();
         document.setTitle("Hello");
+        document.forceAddNextChangeToHistory();
         document.setTitle("Hello World");
+        document.forceAddNextChangeToHistory();
         document.setTitle("Hello World Again");
         document.goToEarlierVersion();
         document.goToEarlierVersion();

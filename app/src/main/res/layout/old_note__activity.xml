@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:fontFamily="sans-serif-medium"
-                android:onClick="titleClicked"
+                android:onClick="onToolbarTitleTapped"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
                 android:textColor="@android:color/white"

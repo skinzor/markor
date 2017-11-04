@@ -63,7 +63,7 @@ public class OldNoteActivity extends AppCompatActivity {
     ViewSwitcher _viewSwitcher;
 
     @BindView(R.id.note__activity__markdownchar_bar)
-    ViewGroup _markdownCharBar;
+    ViewGroup _markdownShortcutBar;
 
     @BindView(R.id.note__activity__text_note_title)
     TextView _headerNoteTitle;
@@ -119,6 +119,10 @@ public class OldNoteActivity extends AppCompatActivity {
             _note = (File) getIntent().getSerializableExtra(Constants.NOTE_KEY);
         }
 
+
+
+
+
         if (_note != null) {
             _contentEditor.setText(readNote());
             _editNoteTitle.setText(Constants.MD_EXTENSION.matcher(_note.getName()).replaceAll(""));
@@ -132,7 +136,6 @@ public class OldNoteActivity extends AppCompatActivity {
             }
 
         }
-
         _editNoteTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -144,14 +147,6 @@ public class OldNoteActivity extends AppCompatActivity {
             }
         });
 
-    }
-
-    private String readNote() {
-        java.net.URI oldUri = _note.toURI();
-        String noteContent = MarkorSingleton.getInstance().readFileUri(Uri.parse(oldUri.toString()), this);
-        _initialFileName = _note.getName();
-        _initialContent = noteContent;
-        return noteContent;
     }
 
     private void openFromSendAction(Intent receivingIntent) {
@@ -209,7 +204,7 @@ public class OldNoteActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // Set up the font and background activity_preferences
-        setupKeyboardBar();
+        setupMarkdownShortcutBar();
         setupAppearancePreferences();
 
         IntentFilter ifilter = new IntentFilter();
@@ -225,61 +220,6 @@ public class OldNoteActivity extends AppCompatActivity {
         }
 
         super.onPause();
-    }
-
-    private void setupKeyboardBar() {
-        if (_appSettings.isShowMarkdownShortcuts() && _markdownCharBar.getChildCount() == 0) {
-            appendSmartActions();
-            appendRegularActions();
-            appendExtraActions();
-        } else if (!_appSettings.isShowMarkdownShortcuts()) {
-            findViewById(R.id.note__activity__scroll_markdownchar_bar).setVisibility(View.GONE);
-        }
-    }
-
-    private void appendRegularActions() {
-        for (int[] actions : Constants.KEYBOARD_REGULAR_ACTIONS_ICONS) {
-            appendButton(actions[0], new KeyboardRegularActionListener(Constants.KEYBOARD_REGULAR_ACTIONS[actions[1]]));
-        }
-    }
-
-    private void appendSmartActions() {
-        for (int[] actions : Constants.KEYBOARD_SMART_ACTIONS_ICON) {
-            appendButton(actions[0], new KeyboardSmartActionsListener(Constants.KEYBOARD_SMART_ACTIONS[actions[1]]));
-        }
-    }
-
-    private void appendExtraActions() {
-        for (int[] actions : Constants.KEYBOARD_EXTRA_ACTIONS_ICONS) {
-            appendButton(actions[0], new KeyboardExtraActionsListener(actions[1]));
-        }
-    }
-
-    private void appendButton(int shortcut, View.OnClickListener l) {
-        ImageView shortcutButton = (ImageView) getLayoutInflater().inflate(R.layout.ui__quick_keyboard_button, (ViewGroup)null);
-        shortcutButton.setImageResource(shortcut);
-        shortcutButton.setOnClickListener(l);
-
-        boolean isDarkTheme = _appSettings.isDarkThemeEnabled();
-        shortcutButton.setColorFilter(ContextCompat.getColor(this,
-                isDarkTheme ? android.R.color.white : R.color.grey));
-        _markdownCharBar.addView(shortcutButton);
-    }
-
-    private void setupAppearancePreferences() {
-        _contentEditor.setTextSize(TypedValue.COMPLEX_UNIT_SP, _appSettings.getFontSize());
-        _contentEditor.setTypeface(Typeface.create(_appSettings.getFontFamily(), Typeface.NORMAL));
-
-        if (_appSettings.isDarkThemeEnabled()) {
-            _contentEditor.setBackgroundColor(getResources().getColor(R.color.dark_grey));
-            _contentEditor.setTextColor(getResources().getColor(android.R.color.white));
-            findViewById(R.id.note__activity__scroll_markdownchar_bar).setBackgroundColor(getResources().getColor(R.color.dark_grey));
-        } else {
-            _contentEditor.setBackgroundColor(getResources().getColor(android.R.color.white));
-            _contentEditor.setTextColor(getResources().getColor(R.color.dark_grey));
-            findViewById(R.id.note__activity__scroll_markdownchar_bar)
-                    .setBackgroundColor(getResources().getColor(R.color.lighter_grey));
-        }
     }
 
     private void previewNote() {
@@ -379,6 +319,93 @@ public class OldNoteActivity extends AppCompatActivity {
             filename = "Markor - " + String.valueOf(UUID.randomUUID().getMostSignificantBits()).substring(0, 6);
         }
         return filename;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private String readNote() {
+        java.net.URI oldUri = _note.toURI();
+        String noteContent = MarkorSingleton.getInstance().readFileUri(Uri.parse(oldUri.toString()), this);
+        _initialFileName = _note.getName();
+        _initialContent = noteContent;
+        return noteContent;
+    }
+
+    private void setupMarkdownShortcutBar() {
+        if (_appSettings.isShowMarkdownShortcuts() && _markdownShortcutBar.getChildCount() == 0) {
+            // Smart Actions
+            for (int[] actions : Constants.KEYBOARD_SMART_ACTIONS_ICON) {
+                appendMarkdownShortcutToBar(actions[0], new KeyboardSmartActionsListener(Constants.KEYBOARD_SMART_ACTIONS[actions[1]]));
+            }
+
+            // Regular actions
+            for (int[] actions : Constants.KEYBOARD_REGULAR_ACTIONS_ICONS) {
+                appendMarkdownShortcutToBar(actions[0], new KeyboardRegularActionListener(Constants.KEYBOARD_REGULAR_ACTIONS[actions[1]]));
+            }
+
+            // Extra actions
+            for (int[] actions : Constants.KEYBOARD_EXTRA_ACTIONS_ICONS) {
+                appendMarkdownShortcutToBar(actions[0], new KeyboardExtraActionsListener(actions[1]));
+            }
+        } else if (!_appSettings.isShowMarkdownShortcuts()) {
+            findViewById(R.id.note__activity__scroll_markdownchar_bar).setVisibility(View.GONE);
+        }
+    }
+
+    private void appendMarkdownShortcutToBar(int shortcut, View.OnClickListener l) {
+        ImageView shortcutButton = (ImageView) getLayoutInflater().inflate(R.layout.ui__quick_keyboard_button, (ViewGroup)null);
+        shortcutButton.setImageResource(shortcut);
+        shortcutButton.setOnClickListener(l);
+
+        boolean isDarkTheme = _appSettings.isDarkThemeEnabled();
+        shortcutButton.setColorFilter(ContextCompat.getColor(this,
+                isDarkTheme ? android.R.color.white : R.color.grey));
+        _markdownShortcutBar.addView(shortcutButton);
+    }
+
+    private void setupAppearancePreferences() {
+        _contentEditor.setTextSize(TypedValue.COMPLEX_UNIT_SP, _appSettings.getFontSize());
+        _contentEditor.setTypeface(Typeface.create(_appSettings.getFontFamily(), Typeface.NORMAL));
+
+        if (_appSettings.isDarkThemeEnabled()) {
+            _contentEditor.setBackgroundColor(getResources().getColor(R.color.dark_grey));
+            _contentEditor.setTextColor(getResources().getColor(android.R.color.white));
+            findViewById(R.id.note__activity__scroll_markdownchar_bar).setBackgroundColor(getResources().getColor(R.color.dark_grey));
+        } else {
+            _contentEditor.setBackgroundColor(getResources().getColor(android.R.color.white));
+            _contentEditor.setTextColor(getResources().getColor(R.color.dark_grey));
+            findViewById(R.id.note__activity__scroll_markdownchar_bar)
+                    .setBackgroundColor(getResources().getColor(R.color.lighter_grey));
+        }
     }
 
     public void switchHeaderView(Boolean hasFocus) {
